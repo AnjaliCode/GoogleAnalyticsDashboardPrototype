@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The index Page</title>
+    <link rel="stylesheet" href="http://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.min.css">
+    <link rel='stylesheet' href='/stylesheets/bootstrap.css'/>
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+  </head>
+  <body>
+
+    <!-- Start Top Bar -->
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <ul class="menu">
+          <li class="menu-text" style="background-color: pink; border-radius: 10px;">Google Analytics Site</li>
+          <li><a href="#">Authentication</a></li>
+          <li><a href="#">Analytics</a></li>
+          <hr>
+        </ul>
+      </div>
+      <div class="top-bar-right">
+        <ul class="menu">
+          <li><a href="#">Home Page</a></li>
+          <li><a href="#">Landing Page</a></li>
+          <li><a href="#">Bootstrap</a></li>
+          <li><a href="#">Zurb Foundation</a></li>
+        </ul>
+      </div>
+    </div>
+    <!-- End Top Bar -->
+
+    <div class="row columns">
+      <div class="orbit" role="region" aria-label="Favorite Space Pictures" data-orbit>
+        <ul class="orbit-container">
+          <button class="orbit-previous" aria-label="previous"><span class="show-for-sr">Previous Slide</span>&#9664;</button>
+          <button class="orbit-next" aria-label="next"><span class="show-for-sr">Next Slide</span>&#9654;</button>
+          <br>
+            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+            <img src="/images/analytics1.jpeg" width="25%" height="25%">
+            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+            <img src="/images/analytics2.jpeg" width="25%" height="25%">
+            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+            <img src="/images/analytics3.jpeg" width="25%" height="25%">
+            <br><hr>
+        </ul>
+      </div>
+    </div>
+
+  <h3>  Google's OAuth 2.0 endpoint for requesting an access token </h3>
+  <!--var oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';-->
+  <!--var redirect_uri = 'http://localhost:8080/oauth2callback';-->
+
+<!-- Google's OAuth 2.0 endpoint for requesting an access token -->
+   <form method='get' action='https://accounts.google.com/o/oauth2/v2/auth'>
+     <input type="hidden" name='client_id' value="633489205425-nn0coep2ntgrqj2e2v9agu94qgods8ia.apps.googleusercontent.com" >
+     <input type="hidden" name='redirect_uri' value='http://localhost:8080/oauth2callback'>
+     <input type="hidden" name='response_type' value='token'>
+     <input type="hidden" name='scope' value='https://www.googleapis.com/auth/drive.metadata.readonly'>
+     <input type="hidden" name='include_granted_scopes' value='true'>
+     <input type="hidden" name='state' value='pass-through value'>
+  <button type="submit" class="btn btn-primary">Submit for Authentication</button>
+  </form>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="https://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.js"></script>
+
+  </body>
+</html>

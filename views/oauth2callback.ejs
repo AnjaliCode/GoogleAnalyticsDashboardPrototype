@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Analytics Page</title>
+    <link rel="stylesheet" href="http://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.min.css">
+    <link rel='stylesheet' href='/stylesheets/bootstrap.css'/>
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+    <script src="https://apis.google.com/js/client.js?onload=authorize"></script>
+  </head>
+  <body>
+    <!-- Start Top Bar -->
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <ul class="menu">
+          <li class="menu-text" style="background-color: pink; border-radius: 10px;">Google Analytics Site</li>
+          <li><a href="#">Authentication</a></li>
+          <li><a href="#">Analytics</a></li>
+          <hr>
+        </ul>
+      </div>
+      <div class="top-bar-right">
+        <ul class="menu">
+          <li><a href="#">Home Page</a></li>
+          <li><a href="#">Landing Page</a></li>
+          <li><a href="#">Bootstrap</a></li>
+          <li><a href="#">Zurb Foundation</a></li>
+        </ul>
+      </div>
+    </div>
+    <!-- End Top Bar -->
+
+    <div class="row columns">
+      <div class="orbit" role="region" aria-label="Favorite Space Pictures" data-orbit>
+        <ul class="orbit-container">
+          <button class="orbit-previous" aria-label="previous"><span class="show-for-sr">Previous Slide</span>&#9664;</button>
+          <button class="orbit-next" aria-label="next"><span class="show-for-sr">Next Slide</span>&#9654;</button>
+          <br>
+            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+            <img src="/images/analytics1.jpeg" width="25%" height="25%">
+            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+            <img src="/images/analytics2.jpeg" width="25%" height="25%">
+            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+            <img src="/images/analytics3.jpeg" width="25%" height="25%">
+            <br><hr>
+        </ul>
+      </div>
+    </div>
+    <hr>
+
+  <div id="xhttpResponse"></div>
+  <script>
+  var href = window.location.href;
+  console.log('href: ', window.location.href);
+  var array = href.split("&");
+  console.log('array: ', array);
+  var access_token = array[1].toString().split("=")[1];
+  var token_type = array[2].toString().split("=")[1];
+  var expires_in = array[3].toString().split("=")[1];
+  var scope = array[4].toString().split('=')[1].toString().split('%20')[0];
+  console.log('access_token: ', access_token);
+  console.log('token_type: ', token_type);
+  console.log('expires_in: ', expires_in);
+  console.log('scope: ', scope);
+
+ //Depending on the access level given by user, drive can be accessed with xhttp for watching every single activity of user
+  var xhttp = new XMLHttpRequest();
+  var url = 'https://www.googleapis.com/drive/v3/about?fields=user&'+ 'access_token='+ access_token;
+  xhttp.open('GET',url, true);
+  xhttp.onreadystatechange = function(e){
+    if(e){}
+    if(this.status== 200 && this.readyState == 4){
+      document.getElementById('xhttpResponse').innerHTML = 'response: '+ this.response;
+    }
+    if(this.status== 400 && this.readyState == 4){
+      document.getElementById('xhttpResponse').innerHTML = 'responseText: ' + this.responseText;
+      window.location.href = 'http://localhost:8080/';
+    }
+  }
+  xhttp.send();
+  </script>
+
+  <h2>Hello Analytics</h2>
+
+    <button id="auth-button" class='btn btn-primary' type="submit">Get Gooogle Analytics Data</button>
+    <p>Note: Please press Get Google Analytics button again for updated results in text area.</p>
+
+  <hr>
+  <textarea cols="80" rows="20" id="query-output-in-text" style="display:none;"></textarea><br>
+  <br>
+  <hr>
+  <div id="query-output" height="500" width="500" style="border: 1px solid black; display: none; background-color:light-blue;"></div>
+  <hr>
+  <div id="web-data" height="500" width="500" style="border: 1px solid black; display: none; background-color:light-blue;"></div>
+  <br>
+  <!-- chart Data -->
+  <div id="embed-api-auth-container"></div>
+  <div id="chart-container"></div>
+  <div id="view-selector-container"></div>
+  <!-- new introductions-->
+  <div id="chart-1-container"></div>
+  <div id="chart-2-container"></div>
+  <div id="main-chart-container"></div>
+  <div id="breakdown-chart-container"></div>
+  <div id="view-selector-1-container"></div>
+  <div id="view-selector-2-container"></div>
+  <!-- end chart data -->
+  <script>
+    document.getElementById('query-output-in-text').style.display= "block";
+    document.getElementById('query-output').style.display= "block";
+  // with authdata manage Google analytics reporting APIs:
+  // Replace with client ID from the developer console.
+  var CLIENT_ID = "633489205425-nn0coep2ntgrqj2e2v9agu94qgods8ia.apps.googleusercontent.com";
+  // Set authorized scope.
+  var SCOPES = ['https://www.googleapis.com/auth/analytics.readonly'];
+  // Add an event listener to the 'auth-button'.
+  document.getElementById('auth-button').addEventListener('click', authorize);
+
+  function authorize(event) {
+    // Handles the authorization flow.
+    // `immediate` should be false when invoked from the button click.
+    var useImmdiate = event ? false : true;
+    var authData = {
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      immediate: useImmdiate
+    };
+
+    gapi.auth.authorize(authData, function(response) {
+      var authButton = document.getElementById('auth-button');
+      if (response.error) {
+        authButton.hidden = false;
+      }
+      else {
+        queryAccounts();
+      }
+    });
+  }
+
+function queryAccounts() {
+  // Load the Google Analytics client library.
+  gapi.client.load('analytics', 'v3').then(function() {
+    // Get a list of all Google Analytics accounts for this user
+    gapi.client.analytics.management.accounts.list().then(handleAccounts);
+  });
+}
+
+function handleAccounts(response) {
+  // Handles the response from the accounts list method.
+  if (response.result.items && response.result.items.length) {
+    // Get the first Google Analytics account.
+    var firstAccountId = response.result.items[0].id;
+    // Query for properties.
+    queryProperties(firstAccountId);
+  } else {
+    console.log('No accounts found for this user.');
+  }
+}
+
+function queryProperties(accountId) {
+  // Get a list of all the properties for the account.
+  gapi.client.analytics.management.webproperties.list(
+      {'accountId': accountId})
+    .then(handleProperties)
+    .then(null, function(err) {
+      // Log any errors.
+      console.log(err);
+  });
+}
+
+var firstAccountId;
+var propertyIdList = [];
+function handleProperties(response) {
+  // Handles the response from the webproperties list method.
+  if (response.result.items && response.result.items.length) {
+    // Get the first Google Analytics account
+    firstAccountId = response.result.items[0].accountId;
+    for(var i=0; i<response.result.items.length; i++) {
+      var thePropertyId = response.result.items[i].id;
+      // List of property ids:
+      propertyIdList.push(thePropertyId);
+      // Query for Views (Profiles) for all properties.
+      queryProfiles(firstAccountId, thePropertyId);
+    }
+    var firstPropertyId = response.result.items[0].id;
+      queryProfile(firstAccountId, firstPropertyId);
+    // Query for Views (Profiles).
+  } else {
+    console.log('No properties found for this user.');
+  }
+}
+
+// Get a list of all Views (Profiles) for the first property
+// of the first Account.
+function queryProfiles(accountId, propertyId) {
+  gapi.client.analytics.management.profiles.list({
+      'accountId': accountId,
+      'webPropertyId': propertyId
+  }) //
+  .then(getProperty)
+  .then(null, function(err) {
+      // Log any errors.
+      console.log(err);
+  });
+}
+// Get a list of views for the first property
+// of the first Account.
+function queryProfile(accountId, propertyId) {
+  gapi.client.analytics.management.profiles.list({
+      'accountId': accountId,
+      'webPropertyId': propertyId
+  })
+  .then(handleProfiles)
+  .then(null, function(err) {
+      // Log any errors.
+      console.log(err);
+  });
+}
+
+function handleProfiles(response) {
+  // Handles the response from the profiles list method.
+  if (response.result.items && response.result.items.length) {
+    // Get the first View (Profile) ID.
+      var firstProfileId = response.result.items[0].id;
+      // Query the Core Reporting API.
+      queryCoreReportingApi(firstProfileId);
+    } else {
+    console.log('No views (profiles) found for this user.');
+  }
+}
+
+var steps = []; // to make data persistent for future use
+function getProperty() {
+  var text = '';
+  for(var i=0; i<propertyIdList.length; i++){
+    var step = {};
+    var request = gapi.client.analytics.management.webproperties.get({
+      'accountId': firstAccountId,
+      'webPropertyId': propertyIdList[i],
+    });
+    request.execute(function (response) {
+      var property = response.result;
+      console.log('property: ', property);
+      console.log('internalProperrtyId: ', property.internalWebPropertyId);
+      console.log('website URL: ', property.websiteUrl);
+      console.log('updated: ', property.updated);
+      console.log('dataRetentionResetOnNewActivity: ', property.dataRetentionResetOnNewActivity);
+      step['internalProperrtyId'] = property.internalWebPropertyId;
+      step['websiteURL']= property.websiteUrl;
+      step['industryVertical']= property.industryVertical;
+      step['updated']= property.updated;
+      step['dataRetentionResetOnNewActivity']= property.dataRetentionResetOnNewActivity;
+    });
+    steps.push(step);
+    console.log('step: ', step);
+  }
+  var elem = document.getElementById('query-output');
+  while(elem.firstChild)
+  elem.removeChild(elem.firstChild);
+  elem.style.display= "block";
+  console.log('steps: ', steps);
+  var jsonSteps =  JSON.stringify(steps, null, 2);
+  var parseSteps = JSON.parse(jsonSteps);
+  document.getElementById('query-output').innerHTML = jsonSteps;
+}
+
+// Query the Core Reporting API for the number sessions for
+// the past ten days. This can change depending on user requitrement.
+function queryCoreReportingApi(profileId) {
+  gapi.client.analytics.data.ga.get({
+    'ids': 'ga:' + profileId,
+    'start-date': '10daysAgo',
+    'end-date': 'today',
+    'metrics': 'ga:sessions'
+  })
+  .then(function(theResponse) {
+    var formattedJson = JSON.stringify(theResponse.result, null, 2);
+    document.getElementById('query-output-in-text').style.display= "block";
+    document.getElementById('query-output-in-text').value = formattedJson;
+    // User account information:
+    document.getElementById('web-data').style.display= "block";
+    var profileInfo = theResponse.result.profileInfo;
+    var tableId = JSON.stringify(profileInfo).split(":")[1].toString().split(',')[0];
+    console.log('tableId: ', tableId);
+    var element = document.getElementById('web-data');
+    while(element.firstChild)
+    element.removeChild(element.firstChild);
+    var params = document.createElement("p");
+    var values = document.createTextNode('profileId: '+ theResponse.result.profileInfo.profileId);
+    var params1 = document.createElement("p");
+    var values1 = document.createTextNode("profileInfo's tableId: "+ tableId);
+    params.appendChild(values);
+    params1.appendChild(values1);
+    element.appendChild(params);
+    element.appendChild(params1);
+  })
+  .then(null, function(err) {
+      // Log any errors.
+      console.log(err);
+  });
+}
+
+// Dashboard charts
+    (function(w,d,s,g,js,fs){
+      g=w.gapi||(w.gapi={});g.analytics={q:[],ready:function(f){this.q.push(f);}};
+      js=d.createElement(s);fs=d.getElementsByTagName(s)[0];
+      js.src='https://apis.google.com/js/platform.js';
+      fs.parentNode.insertBefore(js,fs);js.onload=function(){g.load('analytics');};
+    }(window,document,'script'));
+
+  gapi.analytics.ready(function() {
+  /*
+    Authorize the user immediately if the user has already granted access.
+   If no access has been created, render an authorize button inside the
+   element with the ID "embed-api-auth-container".
+   */
+   gapi.analytics.auth.authorize({
+    container: 'embed-api-auth-container',
+    clientid: CLIENT_ID
+    });
+
+    var viewSelector = new gapi.analytics.ViewSelector({
+    container: 'view-selector-container'
+    });
+  // Render the view selector to the page.
+    viewSelector.execute();
+
+    var viewSelector1 = new gapi.analytics.ViewSelector({
+    container: 'view-selector-1-container'
+    });
+
+    /**
+     * Create a ViewSelector for the second view to be rendered inside of an
+     * element with the id "view-selector-2-container".
+     */
+    var viewSelector2 = new gapi.analytics.ViewSelector({
+    container: 'view-selector-2-container'
+    });
+    // Render both view selectors to the page.
+      viewSelector1.execute();
+      viewSelector2.execute();
+    /**
+     * Create a new DataChart instance with the given query parameters
+     * and Google chart options. It will be rendered inside an element
+     * with the id "chart-container".
+     */
+    var dataChart = new gapi.analytics.googleCharts.DataChart({
+      query:{
+        metrics: 'ga:sessions',
+        dimensions: 'ga:date',
+        'start-date': '30daysAgo',
+        'end-date': 'yesterday'
+      },
+      chart: {
+        container: 'chart-container',
+        type: 'LINE',
+        options: {
+          width: '100%'
+        }
+      }
+    });
+    /**
+     * Render the dataChart on the page whenever a new view is selected.
+     */
+    viewSelector.on('change', function(ids) {
+      dataChart.set({query: {ids: ids}}).execute();
+    });
+    /**
+   * Create the first DataChart for top countries over the past 30 days.
+   * It will be rendered inside an element with the id "chart-1-container".
+   */
+   var dataChart1 = new gapi.analytics.googleCharts.DataChart({
+     query: {
+      metrics: 'ga:sessions',
+      dimensions: 'ga:country',
+      'start-date': '30daysAgo',
+      'end-date': 'yesterday',
+      'max-results': 6,
+      sort: '-ga:sessions'
+    },
+    chart: {
+      container: 'chart-1-container',
+      type: 'PIE',
+      options: {
+        width: '100%',
+        pieHole: 4/9
+      }
+    }
+  });
+
+  /**
+   * Create the second DataChart for top countries over the past 30 days.
+   * It will be rendered inside an element with the id "chart-2-container".
+   */
+    var dataChart2 = new gapi.analytics.googleCharts.DataChart({
+     query: {
+      metrics: 'ga:sessions',
+      dimensions: 'ga:country',
+      'start-date': '30daysAgo',
+      'end-date': 'yesterday',
+      'max-results': 6,
+      sort: '-ga:sessions'
+    },
+    chart: {
+      container: 'chart-2-container',
+      type: 'PIE',
+      options: {
+        width: '100%',
+        pieHole: 4/9
+      }
+    }
+  });
+  /**
+   * Update the first dataChart when the first view selecter is changed.
+   */
+   viewSelector1.on('change', function(ids) {
+     dataChart1.set({query: {ids: ids}}).execute();
+   });
+  /**
+   * Update the second dataChart when the second view selecter is changed.
+   */
+   viewSelector2.on('change', function(ids) {
+     dataChart2.set({query: {ids: ids}}).execute();
+   });
+ });
+// Interactive charts
+  var mainChart = new gapi.analytics.googleCharts.DataChart({
+    query: {
+      'dimensions': 'ga:browser',
+      'metrics': 'ga:sessions',
+      'sort': '-ga:sessions',
+      'max-results': '6'
+    },
+      chart: {
+      type: 'TABLE',
+      container: 'main-chart-container',
+      options: {
+        width: '100%'
+    }
+    }
+  });
+  /**
+   * Create a timeline chart showing sessions over time for the browser the
+   * user selected in the main chart.
+   */
+    var breakdownChart = new gapi.analytics.googleCharts.DataChart({
+      query: {
+      'dimensions': 'ga:date',
+      'metrics': 'ga:sessions',
+      'start-date': '7daysAgo',
+      'end-date': 'yesterday'
+      },
+      chart: {
+      type: 'LINE',
+      container: 'breakdown-chart-container',
+      options: {
+        width: '100%'
+      }
+    }
+  });
+  /**
+     * Store a refernce to the row click listener variable so it can be
+     * removed later to prevent leaking memory when the chart instance is
+     * replaced.
+     */
+     var mainChartRowClickListener;
+    /**
+     * Update both charts whenever the selected view changes.
+     */
+     viewSelector.on('change', function(ids) {
+      var options = {query: {ids: ids}};
+      // Clean up any event listeners registered on the main chart before
+      // rendering a new one.
+      if (mainChartRowClickListener) {
+        google.visualization.events.removeListener(mainChartRowClickListener);
+      }
+      mainChart.set(options).execute();
+      breakdownChart.set(options);
+      // Only render the breakdown chart if a browser filter has been set.
+      if (breakdownChart.get().query.filters) breakdownChart.execute();
+    });
+    /**
+     * Each time the main chart is rendered, add an event listener to it so
+     * that when the user clicks on a row, the line chart is updated with
+     * the data from the browser in the clicked row.
+     */
+      mainChart.on('success', function(response) {
+      var chart = response.chart;
+      var dataTable = response.dataTable;
+      // Store a reference to this listener so it can be cleaned up later.
+      mainChartRowClickListener = google.visualization.events
+          .addListener(chart, 'select', function(event) {
+        // When you unselect a row, the "select" event still fires
+        // but the selection is empty. Ignore that case.
+        if (!chart.getSelection().length) return;
+        var row =  chart.getSelection()[0].row;
+        var browser =  dataTable.getValue(row, 0);
+        var options = {
+          query: {
+            filters: 'ga:browser==' + browser
+          },
+          chart: {
+            options: {
+              title: browser
+            }
+          }
+        };
+        breakdownChart.set(options).execute();
+      });
+    });
+
+  </script>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="https://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.js"></script>
+  </body>
+</html>
