@@ -17,5 +17,8 @@ Please note:
   
   "javascript_origins":["http://localhost:8080"]
   
+  sample account to login and play with:
+  anjalianjalianjali525@gmail.com
+  password: anjali1234
   
   
