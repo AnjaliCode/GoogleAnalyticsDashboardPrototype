@@ -1,5 +1,7 @@
 # GoogleAnalyticsDashboardPrototype
 
+HTML prototype for dashboard for web app or mobile app using Google Analytics APIs with OAuth.
+
 This is a simple HTML prototype for the dashboard for web or mobile apps for User activity tracking for Google user with multiple themes in the same prototype. It clearly demonstrates deferred Object/Promise pattern. There is authentication meant to let user give consent for the prototype to use/monitor his personal data by Google Analytics. Being just a prototype complicated file structure is avaoided. For better responsiveness, client-side javascript is implemented. Server file for this prototype is just a backbone to support client file, rest all interactions are handled by Google server. Being a prototype, server-to-server interactions are not demonstrated.
 
 Please note:
